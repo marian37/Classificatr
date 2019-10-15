@@ -6,108 +6,85 @@
  * @flow
  */
 
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {SafeAreaView, StyleSheet, Text, FlatList, Button} from 'react-native';
+import {RNCamera} from 'react-native-camera';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+let camera = null;
 
 const App: () => React$Node = () => {
+  const [running, setRunning] = useState(false);
+  const [data, setData] = useState(null);
+
+  const takePicture = async () => {
+    if (camera) {
+      const pictureData = await camera.takePictureAsync({
+        quality: 1,
+      });
+      return pictureData;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const processImage = async () => {
+      if (!running) {
+        return;
+      }
+      const pictureData = await takePicture();
+      console.log('Data:', pictureData);
+      const temporaryData = [
+        {title: 'cat', confidence: 0.9},
+        {title: 'dog', confidence: 0.6},
+        {title: 'window', confidence: 0.3},
+      ];
+      setData(temporaryData);
+    };
+
+    processImage();
+  }, [running, data]);
+
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <SafeAreaView style={styles.safeAreaView}>
+      <FlatList
+        style={styles.list}
+        data={data}
+        renderItem={({item}) => (
+          <Text style={styles.row}>
+            {item.label} {item.confidence.toString()}
+          </Text>
+        )}
+        keyExtractor={(_, index) => index.toString()}
+      />
+      <RNCamera
+        ref={ref => (camera = ref)}
+        style={styles.cameraPreview}
+        captureAudio={false}
+      />
+      <Button
+        title={running ? 'Stop' : 'Start'}
+        onPress={() => setRunning(!running)}
+      />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  safeAreaView: {
+    flex: 1,
+    backgroundColor: 'white',
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  row: {
+    fontSize: 15,
+    color: 'black',
+    textAlign: 'center',
   },
-  body: {
-    backgroundColor: Colors.white,
+  cameraPreview: {
+    flex: 8,
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  list: {
+    flex: 1,
+    paddingVertical: 5,
   },
 });
 
