@@ -7,7 +7,14 @@
  */
 
 import React, {useState, useEffect} from 'react';
-import {SafeAreaView, StyleSheet, Text, FlatList, Button} from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  FlatList,
+  Button,
+  NativeModules,
+} from 'react-native';
 import {RNCamera} from 'react-native-camera';
 
 let camera = null;
@@ -33,12 +40,18 @@ const App: () => React$Node = () => {
       }
       const pictureData = await takePicture();
       console.log('Data:', pictureData);
-      const temporaryData = [
-        {title: 'cat', confidence: 0.9},
-        {title: 'dog', confidence: 0.6},
-        {title: 'window', confidence: 0.3},
-      ];
-      setData(temporaryData);
+      if (pictureData) {
+        const result = await NativeModules.ImageClassification.process(
+          pictureData.uri,
+        );
+        console.log('Processed data: ', result);
+        const temporaryData = [
+          {title: 'cat', confidence: 0.9},
+          {title: 'dog', confidence: 0.6},
+          {title: 'window', confidence: 0.3},
+        ];
+        setData(temporaryData);
+      }
     };
 
     processImage();
