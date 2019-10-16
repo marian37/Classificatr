@@ -38,19 +38,18 @@ const App: () => React$Node = () => {
       if (!running) {
         return;
       }
-      const pictureData = await takePicture();
-      console.log('Data:', pictureData);
-      if (pictureData) {
-        const result = await NativeModules.ImageClassification.process(
-          pictureData.uri,
-        );
-        console.log('Processed data: ', result);
-        const temporaryData = [
-          {title: 'cat', confidence: 0.9},
-          {title: 'dog', confidence: 0.6},
-          {title: 'window', confidence: 0.3},
-        ];
-        setData(temporaryData);
+      try {
+        const pictureData = await takePicture();
+        console.log('Data:', pictureData);
+        if (pictureData) {
+          const result = await NativeModules.ImageClassification.process(
+            pictureData.uri,
+          );
+          console.log('Processed data: ', JSON.stringify(result));
+          setData(result);
+        }
+      } catch (error) {
+        console.log(error);
       }
     };
 

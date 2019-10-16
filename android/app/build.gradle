@@ -177,11 +177,16 @@ android {
 
         }
     }
+    aaptOptions {
+        noCompress "tflite"
+        noCompress "lite"
+    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
+    implementation "org.tensorflow:tensorflow-lite:1.14.0"
 
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
